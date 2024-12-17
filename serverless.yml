@@ -1,0 +1,52 @@
+service: starwars-weather-api
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  environment:
+    WEATHER_API_KEY: ${env:WEATHER_API_KEY}
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:*
+      Resource: "*"
+
+functions:
+  fusionados:
+    handler: src/handlers/fusionados.handler
+    events:
+      - http:
+          path: fusionados
+          method: get
+
+  almacenar:
+    handler: src/handlers/almacenar.handler
+    events:
+      - http:
+          path: almacenar
+          method: post
+
+  historial:
+    handler: src/handlers/historial.handler
+    events:
+      - http:
+          path: historial
+          method: get
+
+resources:
+  Resources:
+    CacheTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: CacheTable
+        AttributeDefinitions: [{ AttributeName: key, AttributeType: S }]
+        KeySchema: [{ AttributeName: key, KeyType: HASH }]
+        BillingMode: PAY_PER_REQUEST
+
+    CustomData:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: CustomData
+        AttributeDefinitions: [{ AttributeName: id, AttributeType: S }]
+        KeySchema: [{ AttributeName: id, KeyType: HASH }]
+        BillingMode: PAY_PER_REQUEST
